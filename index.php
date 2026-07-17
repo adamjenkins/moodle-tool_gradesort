@@ -73,7 +73,11 @@ $data = $form->get_data();
 // Stage 3: apply. Guarded by sesskey and an explicit confirm.
 if ($confirm && confirm_sesskey()) {
     $categoryid = required_param('categoryid', PARAM_INT);
-    $mode = sort_mode::from(required_param('mode', PARAM_ALPHA));
+    $rawmode = required_param('mode', PARAM_ALPHA);
+    $mode = sort_mode::tryFrom($rawmode);
+    if ($mode === null) {
+        throw new moodle_exception('invalidmode', 'error', '', $rawmode);
+    }
     $recursive = optional_param('recursive', 0, PARAM_BOOL);
 
     // The category must belong to this course — never trust the posted id.
@@ -116,7 +120,10 @@ if ($data) {
     if (!$category) {
         throw new moodle_exception('invalidcategory', 'error');
     }
-    $mode = sort_mode::from($data->mode);
+    $mode = sort_mode::tryFrom($data->mode ?? '');
+    if ($mode === null) {
+        throw new moodle_exception('invalidmode', 'error', '', $data->mode ?? '');
+    }
 
     echo $OUTPUT->heading(get_string('previewheading', 'tool_gradesort', $category->get_name()), 3);
     echo $OUTPUT->render(new preview((int) $data->categoryid, $mode));
