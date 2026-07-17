@@ -158,8 +158,9 @@ final class applier_test extends \advanced_testcase {
 
     /**
      * Nothing may cross a category boundary: an item in a subcategory stays in
-     * that subcategory, and the subcategory's own contents are untouched when
-     * the sort is not recursive.
+     * that subcategory (is never reparented), and its sortorder is untouched by
+     * a non-recursive sort of the parent category — it must not be pulled into
+     * the parent's sibling pool and renumbered.
      */
     public function test_sorting_never_crosses_category_bounds(): void {
         $this->resetAfterTest();
@@ -170,13 +171,18 @@ final class applier_test extends \advanced_testcase {
         $sub = new \grade_category(['courseid' => $course->id, 'fullname' => 'Sub'], false);
         $sub->insert();
 
-        $inside = $generator->create_module('assign', ['course' => $course->id, 'name' => 'Zulu inside', 'section' => 1]);
+        // Named to sort alphabetically ahead of the outside item, so a leak into
+        // the parent's activity band would not by coincidence reassign it its
+        // own existing sortorder value.
+        $inside = $generator->create_module('assign', ['course' => $course->id, 'name' => 'Aaron inside', 'section' => 1]);
         $insideitem = \grade_item::fetch([
             'courseid' => $course->id, 'itemtype' => 'mod',
             'itemmodule' => 'assign', 'iteminstance' => $inside->id,
         ]);
         $insideitem->set_parent($sub->id);
         $generator->create_module('assign', ['course' => $course->id, 'name' => 'Alpha outside', 'section' => 2]);
+
+        $sortorderbefore = (int) \grade_item::fetch(['id' => $insideitem->id])->sortorder;
 
         applier::apply((int) $root->id, sort_mode::ALPHA, false);
 
@@ -185,6 +191,11 @@ final class applier_test extends \advanced_testcase {
             (int) $sub->id,
             (int) $reloaded->categoryid,
             'Sorting the root category must not reparent anything'
+        );
+        $this->assertSame(
+            $sortorderbefore,
+            (int) $reloaded->sortorder,
+            'Sorting the root category must not renumber an item inside a subcategory'
         );
     }
 

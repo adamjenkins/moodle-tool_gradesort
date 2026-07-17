@@ -22,11 +22,19 @@ use grade_item;
 /**
  * Applies a sort to a grade category: collect, sort, write.
  *
- * The write permutes only the sortorder values the sibling set already occupies,
- * so the multiset of sortorder values in use across the course is unchanged by a
- * sort. Nothing outside the category can move, no gaps open, and no course-wide
- * UPDATE runs — unlike core's move_after_sortorder(), which shifts every higher
- * sortorder in the course on every single call.
+ * The permutation step writes only the sortorder values the sibling set already
+ * occupies, so on its own it leaves the course-wide multiset of sortorder values
+ * unchanged. It never writes categoryid or parent, so nothing crosses a category
+ * boundary, and no course-wide UPDATE runs — unlike core's move_after_sortorder(),
+ * which shifts every higher sortorder in the course on every single call.
+ *
+ * If the siblings collide (duplicate sortorders left by activity duplication,
+ * course merges or restore), a repair step runs first: core's
+ * grade_item::fix_duplicate_sortorder($courseid). That call is course-wide, not
+ * scoped to this category, so it can renumber sortorder values belonging to
+ * grade items in other, unrelated categories. It is order-preserving — nothing
+ * is reordered anywhere by it — but when it runs, the course-wide multiset of
+ * sortorder values can change.
  *
  * @package    tool_gradesort
  * @copyright  2026 Adam Jenkins <adam@wisecat.net>
