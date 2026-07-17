@@ -53,7 +53,7 @@ $tree = grade_category::fetch_course_tree($courseid, true);
 $stack = [[$tree, 0]];
 while ($stack) {
     [$node, $depth] = array_shift($stack);
-    if (($node['type'] ?? '') === 'category' || ($node['type'] ?? '') === 'course') {
+    if (($node['type'] ?? '') === 'category') {
         $categories[$node['object']->id] = str_repeat('- ', $depth) . $node['object']->get_name();
         $children = array_values($node['children'] ?? []);
         foreach (array_reverse($children) as $child) {
@@ -99,6 +99,15 @@ if ($confirm && confirm_sesskey()) {
         ],
     ])->trigger();
 
+    if ($changed === 0) {
+        redirect(
+            $returnurl,
+            get_string('nothingtodo', 'tool_gradesort'),
+            null,
+            \core\output\notification::NOTIFY_INFO
+        );
+    }
+
     redirect(
         $returnurl,
         get_string('sortapplied', 'tool_gradesort', $changed),
@@ -126,7 +135,7 @@ if ($data) {
     }
 
     echo $OUTPUT->heading(get_string('previewheading', 'tool_gradesort', $category->get_name()), 3);
-    echo $OUTPUT->render(new preview((int) $data->categoryid, $mode));
+    echo $OUTPUT->render(new preview((int) $data->categoryid, $mode, (bool) $data->recursive));
 
     $applyurl = new moodle_url($pageurl, [
         'confirm' => 1,

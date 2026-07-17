@@ -50,15 +50,24 @@ class applier {
      * @return int how many grade items had their sortorder changed
      */
     public static function apply(int $categoryid, sort_mode $mode, bool $recursive): int {
+        global $DB;
+
         $categoryids = [$categoryid];
         if ($recursive) {
             $categoryids = array_merge($categoryids, collector::descendant_categories($categoryid));
         }
 
+        // Each write of a permutation transiently duplicates a sortorder value
+        // (A takes B's old value before B is moved off it); a failure between
+        // writes would otherwise leave that duplicate committed to the DB.
+        $transaction = $DB->start_delegated_transaction();
+
         $changed = 0;
         foreach ($categoryids as $id) {
             $changed += self::apply_one($id, $mode);
         }
+
+        $transaction->allow_commit();
         return $changed;
     }
 
@@ -76,7 +85,14 @@ class applier {
         }
 
         $siblings = collector::collect($categoryid);
-        if (self::has_duplicates($siblings)) {
+
+        // The category's own carrier item (excluded from $siblings and never
+        // permuted — core forces its display position) still shares the same
+        // sortorder keyspace as its siblings in core's get_children(), so a
+        // collision between it and one of them is checked for too.
+        $owncarrier = $category->load_grade_item();
+
+        if (self::has_duplicates($siblings, (int) $owncarrier->sortorder)) {
             // Duplicate sortorders are introduced by activity duplication, course
             // merges and restore. They make the requested order unachievable, so
             // repair with core's own function and re-read.
@@ -102,13 +118,20 @@ class applier {
     }
 
     /**
-     * Whether any two siblings share a sortorder.
+     * Whether any two siblings share a sortorder, or a sibling shares one with
+     * the category's own carrier item.
+     *
+     * The carrier's sortorder is checked against, but must never be added to
+     * the pool that gets permuted: core forces its display position regardless
+     * of sortorder, so it is not ours to move.
      *
      * @param array $siblings
+     * @param int $owncarriersortorder the category's own carrier item's sortorder
      * @return bool
      */
-    private static function has_duplicates(array $siblings): bool {
+    private static function has_duplicates(array $siblings, int $owncarriersortorder): bool {
         $sortorders = array_map(fn(sibling $s): int => $s->sortorder, $siblings);
+        $sortorders[] = $owncarriersortorder;
         return count(array_unique($sortorders)) !== count($sortorders);
     }
 }

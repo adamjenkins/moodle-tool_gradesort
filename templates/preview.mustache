@@ -23,10 +23,12 @@
     Context variables required for this template:
     * rows - array of before/after pairs; either side may be null
     * unchanged - true when the sort would make no difference
+    * recursive - true when subcategories will also be sorted (and are not shown below)
 
     Example context (json):
     {
         "unchanged": false,
+        "recursive": false,
         "rows": [
             {
                 "current": {"name": "Quiz: Midterm", "typename": "Quiz", "iscategory": false},
@@ -46,6 +48,9 @@
 {{#unchanged}}
     <div class="alert alert-info" role="status">{{#str}}nothingtodo, tool_gradesort{{/str}}</div>
 {{/unchanged}}
+{{#recursive}}
+    <div class="alert alert-info" role="status">{{#str}}recursivenote, tool_gradesort{{/str}}</div>
+{{/recursive}}
 <div class="table-responsive">
     <table class="generaltable w-100">
         <caption class="sr-only">{{#str}}preview, tool_gradesort{{/str}}</caption>

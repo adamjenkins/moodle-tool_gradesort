@@ -71,4 +71,24 @@ class category_sorted extends \core\event\base {
     public function get_url(): \moodle_url {
         return new \moodle_url('/grade/edit/tree/index.php', ['id' => $this->courseid]);
     }
+
+    /**
+     * Used to map the objectid during course restore, so log entries still
+     * point at the right grade category after its id changes.
+     *
+     * @return array
+     */
+    public static function get_objectid_mapping() {
+        return ['db' => 'grade_categories', 'restore' => 'grade_category'];
+    }
+
+    /**
+     * Used to map other['categoryid'] during course restore, for the same
+     * reason as get_objectid_mapping().
+     *
+     * @return array
+     */
+    public static function get_other_mapping() {
+        return ['categoryid' => ['db' => 'grade_categories', 'restore' => 'grade_category']];
+    }
 }

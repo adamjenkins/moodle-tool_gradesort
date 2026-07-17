@@ -25,9 +25,6 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['applysort'] = 'Apply sort';
-$string['bandactivities'] = 'Activities';
-$string['bandcategories'] = 'Categories';
-$string['banditems'] = 'Other grade items';
 $string['categorytosort'] = 'Category to sort';
 $string['columnafter'] = 'After sorting';
 $string['columncurrent'] = 'Current order';
@@ -42,5 +39,6 @@ $string['previewheading'] = 'Preview: {$a}';
 $string['privacy:metadata'] = 'The Grade category sort plugin does not store any personal data.';
 $string['recursive'] = 'Also sort subcategories';
 $string['recursive_help'] = 'Apply the same sort to every category nested inside the selected one. Each category is sorted within its own bounds — nothing ever moves between categories.';
+$string['recursivenote'] = 'Subcategories will also be sorted. Only the selected category\'s own contents are shown below.';
 $string['sortapplied'] = 'Reordered {$a} grade items.';
 $string['sortmode'] = 'Sort by';

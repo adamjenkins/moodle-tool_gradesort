@@ -35,12 +35,15 @@ class preview implements \renderable, \templatable {
      *
      * @param int $categoryid the category being previewed
      * @param sort_mode $mode
+     * @param bool $recursive whether subcategories will also be sorted
      */
     public function __construct(
         /** @var int the category being previewed */
         private readonly int $categoryid,
         /** @var sort_mode the mode to preview */
         private readonly sort_mode $mode,
+        /** @var bool whether subcategories will also be sorted */
+        private readonly bool $recursive = false,
     ) {
     }
 
@@ -70,7 +73,10 @@ class preview implements \renderable, \templatable {
 
         return [
             'rows' => $rows,
-            'unchanged' => $this->names($current) === $this->names($sorted),
+            // When recursive, subcategories not shown in $rows may still change,
+            // so "nothing changed" can only be claimed for a non-recursive sort.
+            'unchanged' => !$this->recursive && $this->names($current) === $this->names($sorted),
+            'recursive' => $this->recursive,
         ];
     }
 
