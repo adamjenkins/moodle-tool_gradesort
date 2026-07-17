@@ -183,6 +183,93 @@ final class collector_test extends \advanced_testcase {
     }
 
     /**
+     * Course position's second element is the activity's index within its
+     * section's actual course_sections.sequence, not always 0 and not
+     * necessarily creation order.
+     */
+    public function test_course_position_indexinsection_follows_section_sequence(): void {
+        $this->resetAfterTest();
+        global $DB;
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['numsections' => 3]);
+        $root = \grade_category::fetch_course_category($course->id);
+
+        // Create A before B, both in section 1.
+        $modulea = $generator->create_module('assign', ['course' => $course->id, 'name' => 'A', 'section' => 1]);
+        $moduleb = $generator->create_module('assign', ['course' => $course->id, 'name' => 'B', 'section' => 1]);
+
+        // Reverse the section's sequence so B precedes A on the course page,
+        // deliberately unlike creation order.
+        $section = $DB->get_record('course_sections', ['course' => $course->id, 'section' => 1]);
+        $DB->set_field('course_sections', 'sequence', $moduleb->cmid . ',' . $modulea->cmid, ['id' => $section->id]);
+        rebuild_course_cache($course->id, true);
+
+        $siblings = collector::collect($root->id);
+        $byname = [];
+        foreach ($siblings as $sibling) {
+            $byname[$sibling->name] = $sibling;
+        }
+
+        // Same section for both.
+        $this->assertSame($byname['A']->coursepos[0], $byname['B']->coursepos[0]);
+
+        // Index within the section follows the actual sequence (B first), not
+        // creation order (which was A first) and not a hardcoded 0 for both.
+        $this->assertSame(0, $byname['B']->coursepos[1]);
+        $this->assertSame(1, $byname['A']->coursepos[1]);
+    }
+
+    /**
+     * A single activity that owns more than one grade item (mod_workshop:
+     * submission and assessment) gets a coursepos per item, differing only in
+     * itemnumber, ordered submission (0) before assessment (1).
+     */
+    public function test_course_position_itemnumber_discriminates_multi_item_activity(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['numsections' => 2]);
+        $root = \grade_category::fetch_course_category($course->id);
+
+        $workshop = $generator->create_module('workshop', ['course' => $course->id, 'name' => 'WS', 'section' => 1]);
+
+        $submission = \grade_item::fetch([
+            'courseid' => $course->id,
+            'itemtype' => 'mod',
+            'itemmodule' => 'workshop',
+            'iteminstance' => $workshop->id,
+            'itemnumber' => 0,
+        ]);
+        $assessment = \grade_item::fetch([
+            'courseid' => $course->id,
+            'itemtype' => 'mod',
+            'itemmodule' => 'workshop',
+            'iteminstance' => $workshop->id,
+            'itemnumber' => 1,
+        ]);
+        $this->assertNotNull($submission);
+        $this->assertNotNull($assessment);
+
+        $siblings = collector::collect($root->id);
+        $bygradeitemid = [];
+        foreach ($siblings as $sibling) {
+            $bygradeitemid[$sibling->gradeitemid] = $sibling;
+        }
+
+        $submissionsibling = $bygradeitemid[(int) $submission->id];
+        $assessmentsibling = $bygradeitemid[(int) $assessment->id];
+
+        // Both belong to the same course module, so section and index match.
+        $this->assertSame($submissionsibling->coursepos[0], $assessmentsibling->coursepos[0]);
+        $this->assertSame($submissionsibling->coursepos[1], $assessmentsibling->coursepos[1]);
+
+        // They differ only in itemnumber, and submission sorts before assessment.
+        $this->assertSame(0, $submissionsibling->coursepos[2]);
+        $this->assertSame(1, $assessmentsibling->coursepos[2]);
+        $this->assertLessThan($assessmentsibling->coursepos, $submissionsibling->coursepos);
+    }
+
+    /**
      * descendant_categories walks the whole subtree, excluding the root itself.
      */
     public function test_descendant_categories_walks_the_subtree(): void {
