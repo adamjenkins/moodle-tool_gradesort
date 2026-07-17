@@ -39,7 +39,12 @@ visit Site administration → Notifications.
 ## Usage
 
 In a course, go to any gradebook page and choose **Grade category sort** from the
-gradebook dropdown (under "Setup").
+gradebook dropdown (under "Setup"). Pick a category and a sort mode, press
+**Preview sort** to see the resulting order, then **Apply sort** to write it.
+
+The preview lists the selected category's own contents. If you tick **Also sort
+subcategories**, the nested categories are sorted by the same rule but are not
+listed individually — the preview says so when the option is on.
 
 ## License
 
