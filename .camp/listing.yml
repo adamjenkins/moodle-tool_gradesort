@@ -1,0 +1,23 @@
+# camp listing manifest — descriptive content for your plugin's page.
+# Edit freely and commit; camp ingests this file at each tagged release.
+# Schema: https://camp-registry.org/schema/listing.schema.json
+name: tool_gradesort
+summary: A Moodle admin tool that sorts the contents of a course's grade category.
+description: |
+  Moodle's gradebook appends every new grade item to the end, so gradebook
+  order drifts away from course order as soon as a course is edited. Core has
+  an `autosort` stub that was never implemented — this tool implements it:
+  pick a grade category and a sort mode (such as the order activities appear
+  on the course page) and the category's contents are reordered in one
+  action.
+labels:
+  # Required disclosure labels — pick all that apply (RFC §4.7):
+  #   fully-free | freemium | paid-service | external-account
+  #   donation-supported | commercial-support-available
+  - fully-free
+# screenshots:
+#   - path: .camp/screenshots/overview.png
+#     caption: Main view
+# links:
+#   docs: https://…
+#   issues: https://…
