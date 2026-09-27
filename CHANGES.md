@@ -1,3 +1,7 @@
+# Grade category sort (Unreleased)
+
+- Declare Moodle 5.3 support.
+
 # Grade category sort 1.0.0
 
 First release.

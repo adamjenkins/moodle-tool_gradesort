@@ -5,13 +5,17 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-22.04
+    # moodle.git main rows (experimental: true) are non-blocking by owner decision.
+    continue-on-error: ${{ matrix.experimental == true }}
 
     services:
       postgres:
         # Per each branch's own environment.xml, the PostgreSQL minimum is 14 (5.0),
-        # 15 (5.1), 16 (5.2). One image is shared across the whole matrix, so it must
+        # 15 (5.1), 16 (5.2). The stable rows share one image, so it must
         # satisfy the strictest of the three (5.2's 16). Verified 2026-07-17.
-        image: postgres:16
+        # moodle.git main/5.3 needs PostgreSQL 17 (environment.xml 5.3 block,
+        # verified 2026-09-27), so main rows override the image via the matrix.
+        image: ${{ matrix.pgsql-image || 'postgres:16' }}
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -21,7 +25,9 @@ jobs:
 
       mariadb:
         # MariaDB 10.11 is the minimum for all three branches (5.0/5.1/5.2). Verified 2026-07-17.
-        image: mariadb:10.11
+        # moodle.git main/5.3 needs MariaDB 11.4 (environment.xml 5.3 block,
+        # verified 2026-09-27), so main rows override the image via the matrix.
+        image: ${{ matrix.mariadb-image || 'mariadb:10.11' }}
         env:
           MYSQL_USER: 'root'
           MYSQL_ALLOW_EMPTY_PASSWORD: "true"
@@ -29,7 +35,7 @@ jobs:
           MYSQL_COLLATION_SERVER: "utf8mb4_unicode_ci"
         ports:
           - 3306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval 10s --health-timeout 5s --health-retries 3
+        options: --health-cmd="mariadb-admin ping" --health-interval 10s --health-timeout 5s --health-retries 3
 
     strategy:
       fail-fast: false
@@ -42,6 +48,23 @@ jobs:
           # block; PHP 8.2 is only valid for the 5.0/5.1 branches. Verified 2026-07-17.
           - moodle-branch: MOODLE_502_STABLE
             php: '8.2'
+        include:
+          # moodle.git main (= 5.3beta; PHP 8.3-8.4, MariaDB 11.4.0+, PostgreSQL 17+
+          # per its environment.xml 5.3 block, verified 2026-09-27). NON-BLOCKING by owner
+          # decision: experimental rows run with continue-on-error. 'main' is not an
+          # original moodle-branch value, so each entry is added as a new job.
+          - php: '8.4'
+            moodle-branch: 'main'
+            database: pgsql
+            experimental: true
+            pgsql-image: 'postgres:17'
+            mariadb-image: 'mariadb:11.4'
+          - php: '8.3'
+            moodle-branch: 'main'
+            database: mariadb
+            experimental: true
+            pgsql-image: 'postgres:17'
+            mariadb-image: 'mariadb:11.4'
 
     steps:
       - name: Check out repository code
@@ -105,7 +128,8 @@ jobs:
         run: moodle-plugin-ci mustache
 
       - name: Grunt
-        if: ${{ !cancelled() }}
+        # Not on main: each branch's toolchain minifies differently.
+        if: ${{ !cancelled() && matrix.moodle-branch != 'main' }}
         run: moodle-plugin-ci grunt --max-lint-warnings 0
 
       - name: PHPUnit tests
@@ -121,7 +145,7 @@ jobs:
         if: ${{ failure() && steps.behat.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Behat Faildump (${{ join(matrix.*, ', ') }})
+          name: Behat Faildump (${{ matrix.moodle-branch }}, PHP ${{ matrix.php }}, ${{ matrix.database }})
           path: ${{ github.workspace }}/moodledata/behat_dump
           retention-days: 7
           if-no-files-found: ignore

@@ -29,7 +29,7 @@ sorted strictly within its own bounds.
 
 ## Requirements
 
-Moodle 5.0–5.2. Requires the `moodle/grade:manage` capability in the course.
+Moodle 5.0–5.3. Requires the `moodle/grade:manage` capability in the course.
 
 ## Installation
 

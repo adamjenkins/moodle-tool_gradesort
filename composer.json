@@ -3,7 +3,7 @@
     "description": "Sort the contents of a course's grade category by course order, alphabetically, or by activity type.",
     "type": "moodle-tool",
     "require": {
-        "moodle/moodle": ">=5.0 <5.3",
+        "moodle/moodle": ">=5.0 <5.4",
         "moodle/composer-installer": "^1.0"
     },
     "license": "GPL-3.0-or-later"
