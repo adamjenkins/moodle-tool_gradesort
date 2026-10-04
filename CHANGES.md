@@ -1,12 +1,5 @@
-# Grade category sort (Unreleased)
+# Grade category sort 1.0.1
 
-- Declare Moodle 5.3 support.
-
-# Grade category sort 1.0.0
-
-First release.
-
-- Sort the direct children of a grade category by order in course, alphabetically, or by activity type.
-- Optionally apply the same sort to every nested subcategory.
-- Preview the resulting order before applying it.
-- Sorting never moves a grade item across a category boundary.
+- Declare Moodle 5.3 support; composer.json allows Moodle 5.3.
+- The distribution ZIP includes a LICENSE file (GPL-3.0-or-later) and leaves out development files.
+- Tagged releases are published to the camp plugin registry.

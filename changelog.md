@@ -3,11 +3,17 @@
 All notable changes to this plugin are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [1.0.1] - 2026-10-04
+
+### Added
+
+- `LICENSE` file (GPL-3.0-or-later).
+- Tagged releases are published to the camp plugin registry.
 
 ### Changed
 
-- Declare Moodle 5.3 support.
+- Declare Moodle 5.3 support; `composer.json` allows Moodle 5.3.
+- `.gitattributes` keeps development files out of the distribution ZIP.
 
 ## [1.0.0] - 2026-07-17
 
