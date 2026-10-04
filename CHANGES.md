@@ -1,5 +1,7 @@
-# Grade category sort 1.0.1
+# Grade category sort 1.0.2
 
-- Declare Moodle 5.3 support; composer.json allows Moodle 5.3.
-- The distribution ZIP includes a LICENSE file (GPL-3.0-or-later) and leaves out development files.
-- Tagged releases are published to the camp plugin registry.
+- Automated testing now covers the released Moodle 5.3 (MOODLE_503_STABLE)
+  instead of Moodle's development branch.
+- composer.json now accepts any Moodle 5.x release from 5.0 on (`^5.0`), so
+  later 5.x releases are no longer excluded.
+- No change to the plugin's behaviour.

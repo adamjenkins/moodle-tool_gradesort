@@ -3,6 +3,16 @@
 All notable changes to this plugin are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.0.2] - 2026-10-04
+
+### Changed
+
+- CI tests `MOODLE_503_STABLE` (blocking rows: PHP 8.3-8.4, PostgreSQL 17,
+  MariaDB 11.4) instead of the experimental moodle.git `main` rows, now that
+  Moodle 5.3 is released.
+- `composer.json`: `moodle/moodle` constraint is now `^5.0` (was `>=5.0 <5.4`),
+  so later 5.x releases are not excluded.
+
 ## [1.0.1] - 2026-10-04
 
 ### Added
