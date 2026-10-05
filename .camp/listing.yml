@@ -15,9 +15,19 @@ labels:
   #   fully-free | freemium | paid-service | external-account
   #   donation-supported | commercial-support-available
   - fully-free
-# screenshots:
-#   - path: .camp/screenshots/overview.png
-#     caption: Main view
+screenshots:
+  - path: .camp/screenshots/01-gradebook-before.png
+    caption: 'Before: Gradebook setup lists grade items in the order they were created, not the course order.'
+  - path: .camp/screenshots/02-gradebook-menu.png
+    caption: Open Grade category sort from the gradebook menu, under Setup.
+  - path: .camp/screenshots/03-sort-form.png
+    caption: Choose a category and a sort order, and whether nested subcategories are sorted too.
+  - path: .camp/screenshots/04-preview-course-order.png
+    caption: The preview shows the current order next to the order after sorting by course order. Nothing has changed yet.
+  - path: .camp/screenshots/05-preview-activity-type.png
+    caption: 'The same category sorted by activity type: assignments, then quizzes, then the workshop.'
+  - path: .camp/screenshots/06-after-sort.png
+    caption: 'After Apply sort: the gradebook follows the course order, and a message reports how many items moved.'
 # links:
 #   docs: https://…
 #   issues: https://…
